@@ -23,9 +23,9 @@ def main():
     plt.xlabel('average_monthly_hours')
     plt.ylabel('satisfaction_level')
 
-    ax.legend()
+    plt.legend(loc='right', bbox_to_anchor=(1.35, 0.5))
     
-    fig.savefig('out.png')
+    fig.savefig('out.png', bbox_inches='tight')
     return fig, ax
 
 if __name__ == "__main__":
