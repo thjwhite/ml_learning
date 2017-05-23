@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
+from sklearn import tree
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
 
 DATA_FILE = '/home/tjw/code/datasets/HR_comma_sep.csv'
 
@@ -63,12 +66,27 @@ def plot_pairs_colored_by_left(data, columnx, columny):
     plt.xlabel(columnx)
     plt.ylabel(columny)
     fig.savefig('%s_vs_%s_colored_by_left.png' % (columnx, columny))
+
+def do_decision_trees(data):
+    # need to clean up some data
+    str_columns = [col for col in data if data[col].dtype == 'object']
+    le_map = dict()
+    for col in str_columns:
+        le = preprocessing.LabelEncoder()
+        le.fit(data[col])
+        le_map[col] = le
+        data[col] = le.transform(data[col])
+    clf = tree.DecisionTreeClassifier()
+    X_train, X_test, y_train, y_test = train_test_split(data.drop('left', axis=1), data['left'], test_size=0.2, random_state=33)
+    clf = clf.fit(X_train, y_train)
+    print(clf.score(X_test, y_test))
     
 def main():
     parser = argparse.ArgumentParser(description='do some machine learning '
                                      + 'on the data found at https://www.kaggle.com/ludobenistant/hr-analytics')
     parser.add_argument('--hoursvsat', dest='hoursvsat', action='store_true')
     parser.add_argument('--pairs', dest='pairs', action='store_true')
+    parser.add_argument('--learn', dest='learn', action='store_true')
     args = parser.parse_args()
     
     data = read_data()
@@ -83,6 +101,9 @@ def main():
         for (col_a, col_b) in itertools.product(data.columns, repeat=2):
             print('%s vs %s' % (col_a, col_b))
             plot_pairs_colored_by_left(data, col_a, col_b)
+    if args.learn:
+        print('apply decision trees algorithm')
+        do_decision_trees(data)
 
 if __name__ == "__main__":
     main()
